@@ -123,6 +123,8 @@ function Game:print_status()
 		status_width = Fonts.Status:getWidth(msg)
 	elseif self.state.show_score then
 		msg = "Points: " .. self.points
+	elseif self.state.end_game then
+		msg = "Final Score: " .. self.points
 	end
 
 	if msg ~= nil then
@@ -328,7 +330,14 @@ function Game:compute_score()
 	self.state.show_score = true
 	self.selected = nil
 
-	-- count used
+	local countused = 0
+	for _,v in pairs(self.used) do countused = countused + 1 end
+	if countused == 13 then
+		self.state.end_game = true
+		self.state.end_turn = false
+		self.state.show_score = false
+		self.last_score = nil
+	end
 end
 
 function Game:check_click(mx, my)
@@ -413,6 +422,15 @@ function Game:update(dt)
 			self:roll()
 			self.last_score = nil
 			self.state.end_turn = false
+			self.state.discarding = true
+		elseif self.state.end_game then
+			self.points = 0
+			self.used = {}
+			self.selected = nil
+			self.state.end_game = false
+			self.state.first_roll = true
+			self:roll()
+			self.state.first_roll = false
 			self.state.discarding = true
 		end
 	end
