@@ -9,6 +9,7 @@ local SceneManager = require "lib.SceneManager"
 function love.load()
 	min_dt = 1/60
 	next_time = love.timer.getTime()
+	love.window.setTitle("Touhou Yahtzee")
 	love.window.setMode(910, 800)
 	love.graphics.setFont(Fonts.Main)
 	SceneManager:add({

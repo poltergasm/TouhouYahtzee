@@ -37,7 +37,7 @@ function Game:new()
 		["show_score"] = false
 	}
 	self.scores = {
-		--["change"] = Score(200, 50, "Spellcard"),
+		["chance"] = Score(335, 200, "Spellcard"),
 		["aces"] = Score(60, 425, "Aces"),
 		["twos"] = Score(60, 350, "Twos"),
 		["threes"] = Score(60, 275, "Threes"),
@@ -62,6 +62,7 @@ function Game:new()
 	self.input = Baton.new {
 		["controls"] = {
 			["roll"] = {'key:r'},
+			["play"] = {'key:p'},
 			["click"] = {'mouse:1'}
 		}
 	}
@@ -74,7 +75,7 @@ function Game:new()
 	Jukebox:add_song({ file = "assets/audio/bgm/a_soul_as_red_as_a_ground_cherry.mp3"})
 	Jukebox:add_song({ file = "assets/audio/bgm/desire_drive.mp3" })
 	Jukebox:volume(0.2)
-	Jukebox:play()
+	--Jukebox:play()
 	Snow:load(love.graphics.getWidth(), love.graphics.getHeight(), 25)
 end
 
@@ -143,12 +144,6 @@ function Game:print_status()
 end
 
 function Game:print_scores()
-	love.graphics.setColor(Color.Blue)
-	love.graphics.rectangle("fill", 330, 195, 230, 50, 4, 4)
-	love.graphics.setColor(0, 0, 0)
-	love.graphics.print("Spellcard", 348, 198)
-	love.graphics.setColor(1, 1, 1)
-	love.graphics.print("Spellcard", 350, 200)
 	for k,v in pairs(self.scores) do
 		if self.used[k] then
 			love.graphics.setColor(Color.Red)
@@ -392,6 +387,9 @@ function Game:check_click(mx, my)
 
 		elseif mx >= 600 and mx <= 830 and my >= 425 and my <= 475 and self.used.threekind == nil then
 			self:select_score(self.scores["threekind"])
+		
+		elseif mx >= 335 and mx <= 565 and my >= 200 and my <= 250 and self.used.chance == nil then
+			self:select_score(self.scores["chance"])
 		end
 	end
 end
@@ -422,6 +420,9 @@ function Game:update(dt)
 	if self.input:pressed "click" then
 		local mx,my = love.mouse.getPosition()
 		self:check_click(mx, my)
+	end
+	if self.input:pressed "play" then
+		Jukebox:play()
 	end
 end
 
