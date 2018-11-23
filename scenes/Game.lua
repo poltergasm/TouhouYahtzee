@@ -150,8 +150,7 @@ function Game:print_scores()
 	love.graphics.setColor(1, 1, 1)
 	love.graphics.print("Spellcard", 350, 200)
 	for k,v in pairs(self.scores) do
-		print(k)
-		if self.used[k] then 
+		if self.used[k] then
 			love.graphics.setColor(Color.Red)
 		elseif self.selected ~= nil and self.selected.name == v.name then
 			love.graphics.setColor(Color.DarkBlue)
@@ -206,16 +205,16 @@ function Game:compute_score()
 		self.used.twos = true
 	elseif sc == "Threes" then
 		for i = 1, 5 do if self.slot[i].d == 3 then c = c + 3 end end
-		self.used.twos = true
+		self.used.threes = true
 	elseif sc == "Fours" then
 		for i = 1, 5 do if self.slot[i].d == 4 then c = c + 4 end end
-		self.used.twos = true
+		self.used.fours = true
 	elseif sc == "Fives" then
 		for i = 1, 5 do if self.slot[i].d == 5 then c = c + 5 end end
-		self.used.twos = true
+		self.used.fives = true
 	elseif sc == "Sixes" then
 		for i = 1, 5 do if self.slot[i].d == 6 then c = c + 6 end end
-		self.used.twos = true
+		self.used.sixes = true
 	
 	elseif sc == "Spellcard" then
 		for i = 1, 5 do c = c + self.slot[i].d end
