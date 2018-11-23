@@ -1,6 +1,8 @@
 local Score = require "lib.Score"
 local Baton = require "lib.Baton"
 local Scene = require "lib.Scene"
+local Snow = require "lib.Snow"
+local Jukebox = require("lib.Jukebox"):new(true)
 local Game = Scene:extends()
 
 local CARD_Y = love.graphics.getHeight() - 256
@@ -67,6 +69,13 @@ function Game:new()
 	self.state.discarding = true
 	self:roll()
 	self.state.first_roll = false
+
+	Jukebox:add_song({ file = "assets/audio/bgm/lullaby_of_deserted_hell.mp3"})
+	Jukebox:add_song({ file = "assets/audio/bgm/a_soul_as_red_as_a_ground_cherry.mp3"})
+	Jukebox:add_song({ file = "assets/audio/bgm/desire_drive.mp3" })
+	Jukebox:volume(0.2)
+	Jukebox:play()
+	Snow:load(love.graphics.getWidth(), love.graphics.getHeight(), 25)
 end
 
 function Game:roll()
@@ -140,8 +149,9 @@ function Game:print_scores()
 	love.graphics.print("Spellcard", 348, 198)
 	love.graphics.setColor(1, 1, 1)
 	love.graphics.print("Spellcard", 350, 200)
-	for _,v in pairs(self.scores) do
-		if self.used[v.name] then 
+	for k,v in pairs(self.scores) do
+		print(k)
+		if self.used[k] then 
 			love.graphics.setColor(Color.Red)
 		elseif self.selected ~= nil and self.selected.name == v.name then
 			love.graphics.setColor(Color.DarkBlue)
@@ -150,9 +160,9 @@ function Game:print_scores()
 		end
 		love.graphics.rectangle("fill", v.x-20, v.y-5,
 			230, Fonts.Main:getHeight(v.name)+10, 4, 4)
-		love.graphics.setColor(0, 0, 0)
+		love.graphics.setColor(0, 0, 0, 1)
 		love.graphics.print(v.name, v.x-2, v.y-2)
-		love.graphics.setColor(1, 1, 1)
+		love.graphics.setColor(1, 1, 1, 1)
 		love.graphics.print(v.name, v.x, v.y)
 	end
 end
@@ -176,6 +186,13 @@ end
 
 function Game:add_points(n)
 	self.points = self.points + n
+end
+
+function Game.unpk(a)
+	local s = ""
+	local i
+	for i=1,#a do s = s .. " " .. a[i] end
+	return s
 end
 
 function Game:compute_score()
@@ -249,8 +266,8 @@ function Game:compute_score()
 		local dices={}
 			for i = 1,5 do table.insert(dices, self.slot[i].d) end
 		table.sort(dices)
-		if unpack(dices) == unpack(lstr[1])
-			or unpack(dices) == unpack(lstr[2]) then
+		if self.unpk(dices) == self.unpk(lstr[1])
+			or self.unpk(dices) == self.unpk(lstr[2]) then
 			c = 40
 		end
 
@@ -277,7 +294,7 @@ function Game:compute_score()
 		end
 		
 		for i=1,#sstr do
-			if string.match(unpack(res), unpack(sstr[i])) then
+			if string.match(self.unpk(res), self.unpk(sstr[i])) then
 				c = 30
 				break
 			end
@@ -382,6 +399,7 @@ end
 
 function Game:update(dt)
 	Game.super.update(self, dt)
+	Snow:update(dt)
 	self.input:update()
 	if self.input:pressed "roll" then
 		if self.state.discarding then
@@ -412,6 +430,7 @@ end
 -- 30 between cards
 function Game:draw()
 	Game.super.draw(self)
+	Snow:draw()
 	love.graphics.setBackgroundColor(Color.Pink)
 	love.graphics.setColor(1, 1, 1, 255)
 	self:print_scores()
