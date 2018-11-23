@@ -5,6 +5,10 @@ local Game = Scene:extends()
 
 local CARD_Y = love.graphics.getHeight() - 256
 local CARD_Y_BOT = CARD_Y + 226
+local STATUS_Y = CARD_Y - 60
+local STATUS_X = 265
+local status_width
+
 local snd = {
 	["cardPlace1"] = love.audio.newSource("assets/audio/sfx/cardPlace1.wav", "static"),
 	["cardPlace2"] = love.audio.newSource("assets/audio/sfx/cardPlace2.wav", "static"),
@@ -27,7 +31,8 @@ function Game:new()
 		["choosing"] = false,
 		["discarding"] = false,
 		["first_roll"] = true,
-		["end_turn"] = false
+		["end_turn"] = false,
+		["show_score"] = false
 	}
 	self.scores = {
 		--["change"] = Score(200, 50, "Spellcard"),
@@ -105,6 +110,9 @@ function Game:print_status()
 		msg = "Choose a score from the list above"
 	elseif self.state.choosing and self.selected ~= nil then
 		msg = "Click to accept " .. self.selected.name
+		status_width = Fonts.Status:getWidth(msg)
+	elseif self.state.show_score then
+		msg = "Points: " .. self.points
 	end
 
 	if msg ~= nil then
@@ -112,7 +120,15 @@ function Game:print_status()
 		love.graphics.setColor(0, 0, 0)
 		love.graphics.print(msg, 267, CARD_Y-62)
 		love.graphics.setColor(1, 1, 1)
-		love.graphics.print(msg, 265, CARD_Y-60)
+		love.graphics.print(msg, STATUS_X, STATUS_Y)
+
+		if self.last_score ~= nil then
+			love.graphics.setColor(0, 0, 0)
+			love.graphics.print("+" .. self.last_score, 432, STATUS_Y-2)
+			love.graphics.setColor(Color.Green)
+			love.graphics.print("+" .. self.last_score, 430, STATUS_Y)
+			love.graphics.setColor(1, 1, 1)
+		end
 		love.graphics.setFont(Fonts.Main)
 	end
 end
@@ -158,8 +174,159 @@ function Game:select_score(n)
 	-- play sound
 end
 
+function Game:add_points(n)
+	self.points = self.points + n
+end
+
+function Game:compute_score()
+	local sc = self.selected.name
+	local i, c = 0, 0
+	if sc == "Aces" then
+		for i = 1, 5 do if self.slot[i].d == 1 then c = c + 1 end end
+		self.used.aces = true
+	elseif sc == "Twos" then
+		for i = 1, 5 do if self.slot[i].d == 2 then c = c + 2 end end
+		self.used.twos = true
+	elseif sc == "Threes" then
+		for i = 1, 5 do if self.slot[i].d == 3 then c = c + 3 end end
+		self.used.twos = true
+	elseif sc == "Fours" then
+		for i = 1, 5 do if self.slot[i].d == 4 then c = c + 4 end end
+		self.used.twos = true
+	elseif sc == "Fives" then
+		for i = 1, 5 do if self.slot[i].d == 5 then c = c + 5 end end
+		self.used.twos = true
+	elseif sc == "Sixes" then
+		for i = 1, 5 do if self.slot[i].d == 6 then c = c + 6 end end
+		self.used.twos = true
+	
+	elseif sc == "Spellcard" then
+		for i = 1, 5 do c = c + self.slot[i].d end
+		self.used.chance = true
+
+	elseif sc == "Yata!" then
+		local first = self.slot[1].d
+		if self.slot[2].d == first and self.slot[3].d == first
+			and self.slot[4].d == first and self.slot[5].d == first then
+			c = 50
+		end
+
+		self.used.yahtzee = true
+
+	elseif sc == "Full House" then
+		local dices = {}
+		local count = 1
+		local f3,f2 = false, false
+		for i = 1,5 do table.insert(dices, self.slot[i].d) end
+		table.sort(dices)
+		for i = 1, 5 do
+			if dices[i] == dices[i-1] then
+				count=count+1
+			else
+				if count == 3 then
+					f3=true
+				elseif count == 2 then
+					f2=true
+				end
+				count=1
+			end
+		end
+		if count == 3 then f3 = true
+		elseif count == 2 then f2 = true end
+		
+		if f3 and f2 then
+			c = 25
+		end
+
+		self.used.fullhouse = true
+
+	elseif sc == "Large Straight" then
+		local same,same2 = false, false
+		local lstr = {
+			{1,2,3,4,5},
+			{2,3,4,5,6}
+		}
+		local dices={}
+			for i = 1,5 do table.insert(dices, self.slot[i].d) end
+		table.sort(dices)
+		if unpack(dices) == unpack(lstr[1])
+			or unpack(dices) == unpack(lstr[2]) then
+			c = 40
+		end
+
+		self.used.lstraight = true
+
+	elseif sc == "Small Straight" then
+		local same,same2 = false, false
+		local sstr = {
+			{1,2,3,4},
+			{2,3,4,5},
+			{3,4,5,6}
+		}
+		local dices={}
+		for i = 1,5 do table.insert(dices, self.slot[i].d) end
+		table.sort(dices)
+	
+		-- remove duplicates or it bugs out
+		local res,hash={},{}
+		for _,v in ipairs(dices) do
+			if not hash[v] then
+				res[#res+1] = v
+				hash[v] = true
+			end
+		end
+		
+		for i=1,#sstr do
+			if string.match(unpack(res), unpack(sstr[i])) then
+				c = 30
+				break
+			end
+		end
+		self.used.sstraight = true
+	
+	elseif sc == "Four of a kind" then
+		local freq = {}
+		for i=1,5 do
+			freq[self.slot[i].d] = (freq[self.slot[i].d] or 0) + 1	
+		end
+		for k,v in pairs(freq) do
+			if v >= 4 then
+				c = k*v
+			end 
+		end
+		self.used.fourkind = true
+
+	elseif sc == "Three of a kind" then
+		local freq = {}
+		for i=1,5 do
+			freq[self.slot[i].d] = (freq[self.slot[i].d] or 0) + 1	
+		end
+		for k,v in pairs(freq) do
+			if v >= 3 then
+				c = k*v
+			end 
+		end
+		self.used.threekind = true
+	end
+
+	if c > 0 then self:add_points(c) end
+	self.last_score = c
+	self.state.end_turn = true
+	self.state.choosing = false
+	self.state.discarding = false
+	self.state.show_score = true
+	self.selected = nil
+
+	-- count used
+end
+
 function Game:check_click(mx, my)
-	-- slot 1
+	if self.state.choosing and self.selected ~= nil and status_width ~= nil then
+		if mx >= STATUS_X and mx <= STATUS_X+status_width and my >= STATUS_Y and my <= STATUS_Y+50 then
+			self:compute_score()
+		end
+	end
+
 	if self.state.discarding then
 		if mx >= 40 and mx <= 190 and my >= CARD_Y and my <= CARD_Y_BOT then
 			self:discard(self.slot[1])
@@ -208,9 +375,9 @@ function Game:check_click(mx, my)
 			self:select_score(self.scores["fourkind"])
 
 		elseif mx >= 600 and mx <= 830 and my >= 425 and my <= 475 and self.used.threekind == nil then
-			self:select_score(self.scores["threekind"])	
+			self:select_score(self.scores["threekind"])
 		end
-	end 
+	end
 end
 
 function Game:update(dt)
@@ -227,6 +394,11 @@ function Game:update(dt)
 				self.state.discarding = false
 				self.state.choosing = true
 			end
+		elseif self.state.end_turn then
+			self:roll()
+			self.last_score = nil
+			self.state.end_turn = false
+			self.state.discarding = true
 		end
 	end
 
