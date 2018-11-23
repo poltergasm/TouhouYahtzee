@@ -1,7 +1,7 @@
 Color = require "lib.Palette"
 Fonts = {
 	["Main"] = love.graphics.newFont("assets/fonts/liebefinden.ttf", 32),
-	["Status"] = love.graphics.newFont("assets/fonts/anjellicsans.ttf", 42)
+	["Status"] = love.graphics.newFont("assets/fonts/bebasneue.ttf", 40)
 }
 
 local SceneManager = require "lib.SceneManager"

@@ -16,7 +16,11 @@ local snd = {
 	["cardPlace2"] = love.audio.newSource("assets/audio/sfx/cardPlace2.wav", "static"),
 	["cardPlace3"] = love.audio.newSource("assets/audio/sfx/cardPlace3.wav", "static"),
 	["cardPlace4"] = love.audio.newSource("assets/audio/sfx/cardPlace4.wav", "static"),
-	["discard"] = love.audio.newSource("assets/audio/sfx/discard.wav", "static")
+	["discard"] = love.audio.newSource("assets/audio/sfx/discard.wav", "static"),
+	["select"] = love.audio.newSource("assets/audio/sfx/select.wav", "static"),
+	["nothing"] = love.audio.newSource("assets/audio/sfx/nothing.wav", "static"),
+	["choose"] = love.audio.newSource("assets/audio/sfx/choose.wav", "static"),
+	["win"] = love.audio.newSource("assets/audio/sfx/win.wav", "static")
 }
 
 function Game:new()
@@ -177,7 +181,8 @@ end
 
 function Game:select_score(n)
 	self.selected = n
-	-- play sound
+	snd.choose:stop()
+	snd.choose:play()
 end
 
 function Game:add_points(n)
@@ -322,7 +327,12 @@ function Game:compute_score()
 		self.used.threekind = true
 	end
 
-	if c > 0 then self:add_points(c) end
+	if c > 0 then
+		snd.select:play()
+		self:add_points(c)
+	else
+		snd.nothing:play()
+	end
 	self.last_score = c
 	self.state.end_turn = true
 	self.state.choosing = false
@@ -333,6 +343,9 @@ function Game:compute_score()
 	local countused = 0
 	for _,v in pairs(self.used) do countused = countused + 1 end
 	if countused == 13 then
+		snd.select:stop()
+		snd.nothing:stop()
+		snd.win:play()
 		self.state.end_game = true
 		self.state.end_turn = false
 		self.state.show_score = false
