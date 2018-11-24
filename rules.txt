@@ -1,0 +1,25 @@
+- HOW TO PLAY -
+
+At its core, Touhou Yahtzee behaves like regular Yahtzee. The name of the game is 
+to score as many points as you can.
+
+Each turn, you have 3 rolls, after which you select the best score to fit the 
+hand you have. Once you pick a score, it cannot be used again for that game. Once 
+all of the possible scores have been used up, the game is over and your final score 
+is presented.
+
+- POTENTIAL SCORES -
+
+Aces to Sixes: Simply counts the number of cards in your deck and multiplies it 
+                by that number. For example, 2 sixes would be worth 12 points.
+Large Straight: Consecutive numbers (ie: 2, 3, 4, 5, 6 or A, 2, 3, 4 ,5). They can be 
+                 in any order, however.
+Small Straight: Similar to large straight, but you only need 4 numbers.
+Full House: This is when you have 3 of the same number, and 2 of another number.
+Four of a kind: Holding 4 of the same card yields points based on 4 multiplied by 
+                 the value of the card.
+Three of a kind: Same as Four of a kind, but with 3 matches instead.
+Yata!: When all 5 cards are the same.
+Spellcard: Similar to "chance" in regular Yahtzee. It simply adds up everything in your 
+           hand and converts it to points. You can reset the spellcard by
+           creating x3 combos, which just means getting 3 consecutive scores worth more than 0 points.

@@ -81,19 +81,20 @@ function Game:new()
 	self.state.discarding = true
 	self.combo = -1
 
-	Jukebox:add_song({ file = "assets/audio/bgm/a_soul_as_red_as_a_ground_cherry.mp3"})
 	Jukebox:add_song({ file = "assets/audio/bgm/lullaby_of_deserted_hell.mp3"})
-	
+	Jukebox:add_song({ file = "assets/audio/bgm/a_soul_as_red_as_a_ground_cherry.mp3"})
 	Jukebox:add_song({ file = "assets/audio/bgm/desire_drive.mp3" })
+	Jukebox:add_song({ file = "assets/audio/bgm/the_youkai_mountain.mp3" })
 	Jukebox:volume(0.2)
 	snd.spellcard:setVolume(0.3)
-	Snow:load(love.graphics.getWidth(), love.graphics.getHeight(), 25)
+	self.tweening = false
 end
 
 function Game:on_enter()
+	Snow:load(love.graphics.getWidth(), love.graphics.getHeight(), 25)
 	self:roll()
 	self.state.first_roll = false
-	--Jukebox:play()
+	Jukebox:play()
 end
 
 function Game:roll()
@@ -111,7 +112,6 @@ function Game:roll()
 		end
 		x = (x + 170)
 	end
-	-- play sound
 end
 
 function Game:print_cards()
@@ -242,6 +242,7 @@ function Game:compute_score()
 		snd.spellcard:play()
 		for i = 1, 5 do c = c + self.slot[i].d end
 		self.used.chance = true
+		self.tweening = true
 		tweens[1] = Tween.new(2, self.slot[1], {x=335, y=200}, 'inExpo')
 		tweens[2] = Tween.new(2, self.slot[2], {x=335, y=200}, 'inExpo')
 		tweens[3] = Tween.new(2, self.slot[3], {x=335, y=200}, 'inExpo')
@@ -360,12 +361,12 @@ function Game:compute_score()
 			self.combo = self.combo + 1
 			if self.combo == 3 then
 				self.used.chance = nil
-				self.combo = 0
+				self.combo = -1
 			end
 		end
 	else
 		if self.used.chance and self.combo < 3 then
-			self.combo = 0
+			self.combo = -1
 		end
 		snd.nothing:play()
 	end
@@ -468,15 +469,14 @@ function Game:update(dt)
 		local i
 		for i = 1,5 do
 			tweens[i] = Tween.new(i*.3, self.slot[i], {x = self.slot[i].orig_x, y = self.slot[i].orig_y}, "linear")
-			--self.slot[i].x = self.slot[i].orig_x
-			--self.slot[i].y = self.slot[i].orig_y
 		end
 		tween_c = false
+		self.tweening = false
 	end
 	Snow:update(dt)
-	--Jukebox:update(dt)
+	Jukebox:update(dt)
 	self.input:update()
-	if self.input:pressed "roll" then
+	if self.input:pressed "roll" and not self.tweening then
 		if self.state.discarding then
 			if self.rolls < 2 then
 				self:roll()
@@ -495,7 +495,7 @@ function Game:update(dt)
 		elseif self.state.end_game then
 			self.points = 0
 			self.used = {}
-			self.combo = 0
+			self.combo = -1
 			self.selected = nil
 			self.state.end_game = false
 			self.state.first_roll = true
