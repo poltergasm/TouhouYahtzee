@@ -67,20 +67,25 @@ function Game:new()
 		["controls"] = {
 			["roll"] = {'key:r'},
 			["play"] = {'key:p'},
+			["alt"] = {'key:lalt'},
+			["enter"] = {'key:return'},
 			["click"] = {'mouse:1'}
 		}
 	}
 	self.spellcard = love.graphics.newImage("assets/gfx/spellcard.png")
 	self.state.discarding = true
-	self:roll()
-	self.state.first_roll = false
 
 	Jukebox:add_song({ file = "assets/audio/bgm/lullaby_of_deserted_hell.mp3"})
 	Jukebox:add_song({ file = "assets/audio/bgm/a_soul_as_red_as_a_ground_cherry.mp3"})
 	Jukebox:add_song({ file = "assets/audio/bgm/desire_drive.mp3" })
 	Jukebox:volume(0.2)
-	--Jukebox:play()
 	Snow:load(love.graphics.getWidth(), love.graphics.getHeight(), 25)
+end
+
+function Game:on_enter()
+	self:roll()
+	self.state.first_roll = false
+	--Jukebox:play()
 end
 
 function Game:roll()
@@ -96,7 +101,7 @@ function Game:roll()
 			local dc = { x = x, d = math.random(1, 6) }
 			self.slot[i] = dc
 		end
-		x = x + 170
+		x = (x + 170)
 	end
 	-- play sound
 end
@@ -158,8 +163,8 @@ function Game:print_scores()
 		else
 			love.graphics.setColor(Color.Purple)
 		end
-		love.graphics.rectangle("fill", v.x-20, v.y-5,
-			230, Fonts.Main:getHeight(v.name)+10, 4, 4)
+		love.graphics.rectangle("fill", (v.x-20), (v.y-5),
+			230, (Fonts.Main:getHeight(v.name)+10), 4, 4)
 		love.graphics.setColor(0, 0, 0, 1)
 		love.graphics.print(v.name, v.x-2, v.y-2)
 		love.graphics.setColor(1, 1, 1, 1)
@@ -355,62 +360,62 @@ end
 
 function Game:check_click(mx, my)
 	if self.state.choosing and self.selected ~= nil and status_width ~= nil then
-		if mx >= STATUS_X and mx <= STATUS_X+status_width and my >= STATUS_Y and my <= STATUS_Y+50 then
+		if mx >= STATUS_X*scaleX and mx <= (STATUS_X+status_width)*scaleX and my >= STATUS_Y*scaleY and my <= (STATUS_Y+50)*scaleY then
 			self:compute_score()
 		end
 	end
 
 	if self.state.discarding then
-		if mx >= 40 and mx <= 190 and my >= CARD_Y and my <= CARD_Y_BOT then
+		if mx >= 40*scaleX and mx <= 190*scaleX and my >= CARD_Y*scaleY and my <= CARD_Y_BOT*scaleY then
 			self:discard(self.slot[1])
-		elseif mx >= 210 and mx <= 360 and my >= CARD_Y and my <= CARD_Y_BOT then
+		elseif mx >= 210*scaleX and mx <= 360*scaleX and my >= CARD_Y*scaleY and my <= CARD_Y_BOT*scaleY then
 			self:discard(self.slot[2])
-		elseif mx >= 380 and mx <= 530 and my >= CARD_Y and my <= CARD_Y_BOT then
+		elseif mx >= 380*scaleX and mx <= 530*scaleX and my >= CARD_Y*scaleY and my <= CARD_Y_BOT*scaleY then
 			self:discard(self.slot[3])
-		elseif mx >= 550 and mx <= 700 and my >= CARD_Y and my <= CARD_Y_BOT then
+		elseif mx >= 550*scaleX and mx <= 700*scaleX and my >= CARD_Y*scaleY and my <= CARD_Y_BOT*scaleY then
 			self:discard(self.slot[4])
-		elseif mx >= 720 and mx <= 870 and my >= CARD_Y and my <= CARD_Y_BOT then
+		elseif mx >= 720*scaleX and mx <= 870*scaleX and my >= CARD_Y*scaleY and my <= CARD_Y_BOT*scaleY then
 			self:discard(self.slot[5])
 		end
 	-- scores
 	elseif self.state.choosing then
-		if mx >= 60 and mx <= 290 and my >= 425 and my <= 475 and self.used.aces == nil then
+		if mx >= 60*scaleX and mx <= 290*scaleX and my >= 425*scaleY and my <= 475*scaleY and self.used.aces == nil then
 			self:select_score(self.scores["aces"])
 
-		elseif mx >= 60 and mx <= 290 and my >= 350 and my <= 400 and self.used.twos == nil then
+		elseif mx >= 60*scaleX and mx <= 290*scaleX and my >= 350*scaleY and my <= 400*scaleY and self.used.twos == nil then
 			self:select_score(self.scores["twos"])
 
-		elseif mx >= 60 and mx <= 290 and my >= 275 and my <= 325 and self.used.threes == nil then
+		elseif mx >= 60*scaleX and mx <= 290*scaleX and my >= 275*scaleY and my <= 325*scaleY and self.used.threes == nil then
 			self:select_score(self.scores["threes"])
 	
-		elseif mx >= 60 and mx <= 290 and my >= 200 and my <= 250 and self.used.fours == nil then
+		elseif mx >= 60*scaleX and mx <= 290*scaleX and my >= 200*scaleY and my <= 250*scaleY and self.used.fours == nil then
 			self:select_score(self.scores["fours"])
 
-		elseif mx >= 60 and mx <= 290 and my >= 125 and my <= 175 and self.used.fives == nil then 
+		elseif mx >= 60*scaleX and mx <= 290*scaleX and my >= 125*scaleY and my <= 175*scaleY and self.used.fives == nil then 
 			self:select_score(self.scores["fives"])
 
-		elseif mx >= 60 and mx <= 290 and my >= 50 and my <= 100 and self.used.sixes == nil then
+		elseif mx >= 60*scaleX and mx <= 290*scaleX and my >= 50*scaleY and my <= 100*scaleY and self.used.sixes == nil then
 			self:select_score(self.scores["sixes"])
 
-		elseif mx >= 600 and mx <= 830 and my >= 50 and my <= 100 and self.used.yahtzee == nil then
+		elseif mx >= 600*scaleX and mx <= 830*scaleX and my >= 50*scaleY and my <= 100*scaleY and self.used.yahtzee == nil then
 			self:select_score(self.scores["yahtzee"])
 
-		elseif mx >= 600 and mx <= 830 and my >= 125 and my <= 175 and self.used.lstraight == nil then
+		elseif mx >= 600*scaleX and mx <= 830*scaleX and my >= 125*scaleY and my <= 175*scaleY and self.used.lstraight == nil then
 			self:select_score(self.scores["lstraight"])
 
-		elseif mx >= 600 and mx <= 830 and my >= 200 and my <= 250 and self.used.sstraight == nil then
+		elseif mx >= 600*scaleX and mx <= 830*scaleX and my >= 200*scaleY and my <= 250*scaleY and self.used.sstraight == nil then
 			self:select_score(self.scores["sstraight"])
 
-		elseif mx >= 600 and mx <= 830 and my >= 275 and my <= 325 and self.used.fullhouse == nil then 
+		elseif mx >= 600*scaleX and mx <= 830*scaleX and my >= 275*scaleY and my <= 325*scaleY and self.used.fullhouse == nil then 
 			self:select_score(self.scores["fullhouse"])
 
-		elseif mx >= 600 and mx <= 830 and my >= 350 and my <= 400 and self.used.fourkind == nil then
+		elseif mx >= 600*scaleX and mx <= 830*scaleX and my >= 350*scaleY and my <= 400*scaleY and self.used.fourkind == nil then
 			self:select_score(self.scores["fourkind"])
 
-		elseif mx >= 600 and mx <= 830 and my >= 425 and my <= 475 and self.used.threekind == nil then
+		elseif mx >= 600*scaleX and mx <= 830*scaleX and my >= 425*scaleY and my <= 475*scaleY and self.used.threekind == nil then
 			self:select_score(self.scores["threekind"])
 		
-		elseif mx >= 335 and mx <= 565 and my >= 200 and my <= 250 and self.used.chance == nil then
+		elseif mx >= 335*scaleX and mx <= 565*scaleX and my >= 200*scaleY and my <= 250*scaleY and self.used.chance == nil then
 			self:select_score(self.scores["chance"])
 		end
 	end
@@ -419,6 +424,7 @@ end
 function Game:update(dt)
 	Game.super.update(self, dt)
 	Snow:update(dt)
+	--Jukebox:update(dt)
 	self.input:update()
 	if self.input:pressed "roll" then
 		if self.state.discarding then
@@ -455,14 +461,23 @@ function Game:update(dt)
 	if self.input:pressed "play" then
 		Jukebox:play()
 	end
+	if self.input:down "alt" and self.input:pressed "enter" then
+		if Fullscreen then
+			Fullscreen = false
+			love.window.setFullscreen(false)
+		else
+			Fullscreen = true
+			love.window.setFullscreen(true)
+		end
+	end
 end
 
 -- 40 padding
 -- 30 between cards
 function Game:draw()
 	Game.super.draw(self)
+	love.graphics.clear(Color.Pink)
 	Snow:draw()
-	love.graphics.setBackgroundColor(Color.Pink)
 	love.graphics.setColor(1, 1, 1, 255)
 	self:print_scores()
 	self:print_status()
