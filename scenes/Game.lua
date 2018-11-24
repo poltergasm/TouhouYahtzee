@@ -81,8 +81,9 @@ function Game:new()
 	self.state.discarding = true
 	self.combo = -1
 
-	Jukebox:add_song({ file = "assets/audio/bgm/lullaby_of_deserted_hell.mp3"})
 	Jukebox:add_song({ file = "assets/audio/bgm/a_soul_as_red_as_a_ground_cherry.mp3"})
+	Jukebox:add_song({ file = "assets/audio/bgm/lullaby_of_deserted_hell.mp3"})
+	
 	Jukebox:add_song({ file = "assets/audio/bgm/desire_drive.mp3" })
 	Jukebox:volume(0.2)
 	snd.spellcard:setVolume(0.3)
@@ -363,6 +364,9 @@ function Game:compute_score()
 			end
 		end
 	else
+		if self.used.chance and self.combo < 3 then
+			self.combo = 0
+		end
 		snd.nothing:play()
 	end
 	self.last_score = c
@@ -491,6 +495,7 @@ function Game:update(dt)
 		elseif self.state.end_game then
 			self.points = 0
 			self.used = {}
+			self.combo = 0
 			self.selected = nil
 			self.state.end_game = false
 			self.state.first_roll = true
