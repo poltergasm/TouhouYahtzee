@@ -1,6 +1,7 @@
 local Score = require "lib.Score"
 local Baton = require "lib.Baton"
 local Scene = require "lib.Scene"
+local Tween = require "lib.Tween"
 local Snow = require "lib.Snow"
 local Jukebox = require("lib.Jukebox"):new(true)
 local Game = Scene:extends()
@@ -11,11 +12,15 @@ local STATUS_Y = CARD_Y - 60
 local STATUS_X = 265
 local status_width
 
+local tweens = {}
+
 local snd = {
 	["cardPlace1"] = love.audio.newSource("assets/audio/sfx/cardPlace1.wav", "static"),
 	["cardPlace2"] = love.audio.newSource("assets/audio/sfx/cardPlace2.wav", "static"),
 	["cardPlace3"] = love.audio.newSource("assets/audio/sfx/cardPlace3.wav", "static"),
 	["cardPlace4"] = love.audio.newSource("assets/audio/sfx/cardPlace4.wav", "static"),
+	["spellcard"] = love.audio.newSource("assets/audio/sfx/spellcard.mp3", "static"),
+	["spellcard2"] = love.audio.newSource("assets/audio/sfx/spellcard2.wav", "static"),
 	["discard"] = love.audio.newSource("assets/audio/sfx/discard.wav", "static"),
 	["select"] = love.audio.newSource("assets/audio/sfx/select.wav", "static"),
 	["nothing"] = love.audio.newSource("assets/audio/sfx/nothing.wav", "static"),
@@ -74,11 +79,13 @@ function Game:new()
 	}
 	self.spellcard = love.graphics.newImage("assets/gfx/spellcard.png")
 	self.state.discarding = true
+	self.combo = -1
 
 	Jukebox:add_song({ file = "assets/audio/bgm/lullaby_of_deserted_hell.mp3"})
 	Jukebox:add_song({ file = "assets/audio/bgm/a_soul_as_red_as_a_ground_cherry.mp3"})
 	Jukebox:add_song({ file = "assets/audio/bgm/desire_drive.mp3" })
 	Jukebox:volume(0.2)
+	snd.spellcard:setVolume(0.3)
 	Snow:load(love.graphics.getWidth(), love.graphics.getHeight(), 25)
 end
 
@@ -98,7 +105,7 @@ function Game:roll()
 	local i, x = 0, 40
 	for i = 1, 5 do
 		if (self.state.discarding and self.slot[i].discard) or self.state.end_turn or self.state.first_roll then
-			local dc = { x = x, d = math.random(1, 6) }
+			local dc = { x = x, orig_x = x, d = math.random(1, 6), y = CARD_Y, orig_y = CARD_Y }
 			self.slot[i] = dc
 		end
 		x = (x + 170)
@@ -109,10 +116,10 @@ end
 function Game:print_cards()
 	local i
 	for i=1, 5 do
-		love.graphics.draw(self.cards[self.slot[i].d], self.slot[i].x, CARD_Y)
+		love.graphics.draw(self.cards[self.slot[i].d], self.slot[i].x, self.slot[i].y)
 		if self.slot[i].discard then
 			love.graphics.setColor(0, 0, 0, 0.7)
-			love.graphics.rectangle("fill", self.slot[i].x, CARD_Y, 150, 220, 10, 10)
+			love.graphics.rectangle("fill", self.slot[i].x, self.slot[i].y, 150, 220, 10, 10)
 			love.graphics.setColor(1, 1, 1, 1)
 		end
 	end
@@ -134,6 +141,13 @@ function Game:print_status()
 		msg = "Points: " .. self.points
 	elseif self.state.end_game then
 		msg = "Final Score: " .. self.points
+	end
+		-- 335 270
+	if self.combo > 0 then
+		love.graphics.setColor(0, 0, 0)
+		love.graphics.print("Combo: x" .. self.combo, 337, 272)
+		love.graphics.setColor(1, 1, 1)
+		love.graphics.print("Combo: x" .. self.combo, 335, 270)
 	end
 
 	if msg ~= nil then
@@ -224,8 +238,14 @@ function Game:compute_score()
 		self.used.sixes = true
 	
 	elseif sc == "Spellcard" then
+		snd.spellcard:play()
 		for i = 1, 5 do c = c + self.slot[i].d end
 		self.used.chance = true
+		tweens[1] = Tween.new(2, self.slot[1], {x=335, y=200}, 'inExpo')
+		tweens[2] = Tween.new(2, self.slot[2], {x=335, y=200}, 'inExpo')
+		tweens[3] = Tween.new(2, self.slot[3], {x=335, y=200}, 'inExpo')
+		tweens[4] = Tween.new(2, self.slot[4], {x=335, y=200}, 'inExpo')
+		tweens[5] = Tween.new(2, self.slot[5], {x=335, y=200}, 'inExpo')
 
 	elseif sc == "Yata!" then
 		local first = self.slot[1].d
@@ -335,6 +355,13 @@ function Game:compute_score()
 	if c > 0 then
 		snd.select:play()
 		self:add_points(c)
+		if self.used.chance and self.combo < 3 then
+			self.combo = self.combo + 1
+			if self.combo == 3 then
+				self.used.chance = nil
+				self.combo = 0
+			end
+		end
 	else
 		snd.nothing:play()
 	end
@@ -421,8 +448,27 @@ function Game:check_click(mx, my)
 	end
 end
 
+local tween_c = false
+local spc2played = false
+
 function Game:update(dt)
 	Game.super.update(self, dt)
+	for _,v in pairs(tweens) do
+		tween_c = v:update(dt)
+	end
+	if tween_c then
+		if not spc2played then
+			snd.spellcard2:play()
+			spc2played = true
+		end
+		local i
+		for i = 1,5 do
+			tweens[i] = Tween.new(i*.3, self.slot[i], {x = self.slot[i].orig_x, y = self.slot[i].orig_y}, "linear")
+			--self.slot[i].x = self.slot[i].orig_x
+			--self.slot[i].y = self.slot[i].orig_y
+		end
+		tween_c = false
+	end
 	Snow:update(dt)
 	--Jukebox:update(dt)
 	self.input:update()
