@@ -29,7 +29,8 @@ function Title:check_click(mx, my)
 		title_music:stop()
 		SceneManager:switch("SGame")
 	elseif mx >= 320*scaleX and mx <= 553*scaleX and my >= 310*scaleY and my <= 360*scaleY then
-		self.show_rules = true
+		title_music:stop()
+		SceneManager:switch("SPoker")
 	end
 end
 
@@ -76,16 +77,16 @@ function Title:draw()
 		love.graphics.setColor(0, 0, 0, 0.7)
 		love.graphics.rectangle("fill", 320, 220, 230, 55, 10, 10)
 		love.graphics.setColor(0, 0, 0, 1)
-		love.graphics.print("Click to play", 347, 227)
+		love.graphics.print("Play Yahtzee", 347, 227)
 		love.graphics.setColor(1, 1, 1, 1)
-		love.graphics.print("Click to play", 345, 225)
+		love.graphics.print("Play Yahtzee", 345, 225)
 
 		love.graphics.setColor(0, 0, 0, 0.7)
 		love.graphics.rectangle("fill", 320, 310, 230, 55, 10, 10)
 		love.graphics.setColor(0, 0, 0, 1)
-		love.graphics.print("How to play", 347, 317)
+		love.graphics.print("Play Poker", 347, 317)
 		love.graphics.setColor(1, 1, 1, 1)
-		love.graphics.print("How to play", 345, 315)
+		love.graphics.print("Play Poker", 345, 315)
 	end
 end
 

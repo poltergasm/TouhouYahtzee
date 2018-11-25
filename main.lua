@@ -2,7 +2,8 @@ Color = require "lib.Palette"
 Fonts = {
 	["Main"] = love.graphics.newFont("assets/fonts/liebefinden.ttf", 32),
 	["Status"] = love.graphics.newFont("assets/fonts/bebasneue.ttf", 40),
-	["Text"] = love.graphics.newFont("assets/fonts/liebefinden.ttf", 20)
+	["Text"] = love.graphics.newFont("assets/fonts/liebefinden.ttf", 20),
+	["Button"] = love.graphics.newFont("assets/fonts/bebasneue.ttf", 25)
 }
 SceneManager = require "lib.SceneManager"
 Canvas = love.graphics.newCanvas(910, 800)
@@ -17,7 +18,8 @@ function love.load()
 	love.graphics.setFont(Fonts.Main)
 	SceneManager:add({
 		["STitle"] = require "scenes.Title"(),
-		["SGame"]  = require "scenes.Game"()
+		["SGame"]  = require "scenes.Game"(),
+		["SPoker"] = require "scenes.Poker"()
 	})
 	SceneManager:switch("STitle")
 end
