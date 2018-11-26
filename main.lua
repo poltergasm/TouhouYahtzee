@@ -21,7 +21,7 @@ function love.load()
 		["SGame"]  = require "scenes.Game"(),
 		["SPoker"] = require "scenes.Poker"()
 	})
-	SceneManager:switch("STitle")
+	SceneManager:switch("SPoker")
 end
 scale = 0
 
