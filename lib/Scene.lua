@@ -8,6 +8,7 @@ function Scene:new()
 end
 
 function Scene:on_enter() end
+function Scene:on_exit() end
 
 function Scene:update(dt)
   self.entity_mgr:update(dt)

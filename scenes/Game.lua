@@ -3,7 +3,6 @@ local Baton = require "lib.Baton"
 local Scene = require "lib.Scene"
 local Tween = require "lib.Tween"
 local Snow = require "lib.Snow"
-local Jukebox = require("lib.Jukebox"):new(true)
 local Game = Scene:extends()
 
 local CARD_Y = love.graphics.getHeight() - 256
@@ -17,20 +16,6 @@ local tweens = {}
 function Game:new()
 	Game.super.new(self)
 
-	self.selected = nil
-	self.used = {}
-	self.last_score = nil
-	self.rolls = 1
-	self.points = 0
-	self.slot = {{x=0,d=0}, {x=0,d=0}, {x=0,d=0}, {x=0,d=0}, {x=0,d=0}}
-	self.state = {
-		["playing"] = true,
-		["choosing"] = false,
-		["discarding"] = false,
-		["first_roll"] = true,
-		["end_turn"] = false,
-		["show_score"] = false
-	}
 	self.scores = {
 		["chance"] = Score(335, 200, "Spellcard"),
 		["aces"] = Score(60, 425, "Aces"),
@@ -60,27 +45,41 @@ function Game:new()
 			["play"] = {'key:p'},
 			["alt"] = {'key:lalt'},
 			["enter"] = {'key:return'},
+			["esc"]   = {'key:escape'},
 			["click"] = {'mouse:1'}
 		}
 	}
 	self.spellcard = love.graphics.newImage("assets/gfx/spellcard.png")
-	self.state.discarding = true
-	self.combo = -1
-
-	Jukebox:add_song({ file = "assets/audio/bgm/lullaby_of_deserted_hell.mp3"})
-	Jukebox:add_song({ file = "assets/audio/bgm/a_soul_as_red_as_a_ground_cherry.mp3"})
-	Jukebox:add_song({ file = "assets/audio/bgm/desire_drive.mp3" })
-	Jukebox:add_song({ file = "assets/audio/bgm/the_youkai_mountain.mp3" })
-	Jukebox:volume(0.2)
 	snd.spellcard:setVolume(0.3)
 	self.tweening = false
 end
 
 function Game:on_enter()
+	self.state = {
+		["playing"] = true,
+		["choosing"] = false,
+		["discarding"] = false,
+		["first_roll"] = true,
+		["end_turn"] = false,
+		["show_score"] = false
+	}
+	self.selected = nil
+	self.used = {}
+	self.last_score = nil
+	self.rolls = 1
+	self.points = 0
+	self.slot = {{x=0,d=0}, {x=0,d=0}, {x=0,d=0}, {x=0,d=0}, {x=0,d=0}}
+	self.state.discarding = true
+	self.combo = -1
+
 	Snow:load(love.graphics.getWidth(), love.graphics.getHeight(), 25)
 	self:roll()
 	self.state.first_roll = false
 	Jukebox:play()
+end
+
+function Game:on_exit()
+	Jukebox:stop()
 end
 
 function Game:roll()
@@ -506,6 +505,9 @@ function Game:update(dt)
 			Fullscreen = true
 			love.window.setFullscreen(true)
 		end
+	end
+	if self.input:pressed "esc" then
+		SceneManager:switch("STitle")
 	end
 end
 

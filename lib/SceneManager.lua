@@ -12,6 +12,7 @@ end
 
 function SceneManager:switch(scene)
   assert(self.scenes[scene], "Cannot switch to scene '" .. scene .. "' because it doesn't exist")
+  if self.current then self.current:on_exit() end
   self.current = self.scenes[scene]
   self.current:on_enter()
 end

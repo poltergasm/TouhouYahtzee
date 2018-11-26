@@ -1,3 +1,5 @@
+Jukebox = require("lib.Jukebox"):new(true)
+
 Color = require "lib.Palette"
 Fonts = {
 	["Main"] = love.graphics.newFont("assets/fonts/liebefinden.ttf", 32),
@@ -30,12 +32,20 @@ function love.load()
 	love.window.setTitle("Touhou Yahtzee")
 	love.window.setMode(910, 800, { resizable = true })
 	love.graphics.setFont(Fonts.Main)
+
+	Jukebox:add_song({ file = "assets/audio/bgm/lullaby_of_deserted_hell.mp3"})
+	Jukebox:add_song({ file = "assets/audio/bgm/sky_of_scarlet_perception.mp3"})
+	Jukebox:add_song({ file = "assets/audio/bgm/a_soul_as_red_as_a_ground_cherry.mp3"})
+	Jukebox:add_song({ file = "assets/audio/bgm/desire_drive.mp3" })
+	Jukebox:add_song({ file = "assets/audio/bgm/the_youkai_mountain.mp3" })
+	Jukebox:volume(0.2)
+
 	SceneManager:add({
 		["STitle"] = require "scenes.Title"(),
 		["SGame"]  = require "scenes.Game"(),
 		["SPoker"] = require "scenes.Poker"()
 	})
-	SceneManager:switch("SPoker")
+	SceneManager:switch("STitle")
 end
 scale = 0
 

@@ -44,7 +44,7 @@ function Poker:new()
 	-- center slot dimensions
 	local i, x = 0, 40
 	for i = 1, 5 do
-		self.card_slot[i] = { x = x+5, y = 255 }
+		self.card_slot[i] = { x = x+10, y = 255 }
 		x = (x + 170)
 	end
 
@@ -66,7 +66,7 @@ end
 
 function Poker:draw_card(n, x, y, slot, shadow)
 	if slot ~= nil and slot > 0 then
-		x = self.card_slot[slot].x+5
+		x = self.card_slot[slot].x
 		y = self.card_slot[slot].y
 	else
 		if shadow then
@@ -95,7 +95,11 @@ function Poker:on_enter()
 	local raise = Button(400, 594, "Raise")
 	local call  = Button(400, 644, "Call")
 	call.on_click = function()
-		print("Clicked call")
+		snd.choose:play()
+		if self.first_play then
+			self.first_play = false
+			self:deal_river()
+		end
 	end
 	local fold  = Button(400, 694, "Fold")
 	self.entity_mgr:add(raise_max)
@@ -105,15 +109,16 @@ function Poker:on_enter()
 
 	-- generate a new deck
 	self.pot = 0
-	self.credits = 100
-	self.dealer_credits = 100
+	self.bet = 1
+	self.credits = 50
+	self.dealer_credits = 50
 	self.deck = {}
 	self.hand = {}
+	self.first_play = true
 	self.dealer_hand = {}
 	self.deck_length = 52
 	self:shuffle()
-	self:add_to_pot(2, 5)
-
+	self:add_to_pot(2, 1)
 	self:deal()
 end
 
@@ -122,7 +127,7 @@ function Poker:shuffle()
 	local i
 	local swap, temp
 	for i = 1, self.deck_length do
-		swap = math.floor(math.random() * i)
+		swap = math.floor(math.random(1, i))
 		temp = self.cards[i]
 		self.deck[i] = self.cards[swap]
 		self.deck[swap] = temp
@@ -131,19 +136,30 @@ end
 
 function Poker:deal()
 	math.randomseed(love.timer.getTime())
-	local new_card = {
+	self.hand[1] = {
 		card = math.random(1, self.deck_length),
 		x    = 710,
 		y    = 544
 	}
 
-	self.hand[1], self.hand[2] = new_card, new_card
+	self.hand[2] = {
+		card = math.random(1, self.deck_length),
+		x    = 710,
+		y    = 544
+	}
 
-	tweens[1] = Tween.new(0.5, self.hand[1], CARD_DIMS.player[1], 'linear')
-	tweens[2] = Tween.new(0.7, self.hand[2], CARD_DIMS.player[2], 'linear')
-
+	self.dealing = true
+	self.card_one_dealt = false
+	tweens[1] = Tween.new(0.4, self.hand[1], CARD_DIMS.player[1], 'linear')
+	snd.cardPlace1:play()
+	
 	self.dealer_hand[1] = self.deck[math.random(1,self.deck_length)]
 	self.dealer_hand[2] = self.deck[math.random(1,self.deck_length)]
+end
+
+function Poker:deal_river()
+	math.randomseed(love.timer.getTime())
+
 end
 
 function Poker:add_to_pot(p, n)
@@ -162,7 +178,16 @@ end
 
 function Poker:update(dt)
 	Poker.super.update(self, dt)
-	for _,v in pairs(tweens) do v:update(dt) end
+	for _,v in pairs(tweens) do
+		local c = v:update(dt)
+		if self.dealing and not self.card_one_dealt and c then
+			self.dealing = false
+			self.card_one_dealt = true
+			tweens[2] = Tween.new(0.4, self.hand[2], CARD_DIMS.player[2], 'linear')
+			snd.cardPlace1:stop()
+			snd.cardPlace2:play()
+		end
+	end
 	Snow:update(dt)
 	self.input:update()
 
