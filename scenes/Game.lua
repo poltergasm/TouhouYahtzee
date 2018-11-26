@@ -14,20 +14,6 @@ local status_width
 
 local tweens = {}
 
-local snd = {
-	["cardPlace1"] = love.audio.newSource("assets/audio/sfx/cardPlace1.wav", "static"),
-	["cardPlace2"] = love.audio.newSource("assets/audio/sfx/cardPlace2.wav", "static"),
-	["cardPlace3"] = love.audio.newSource("assets/audio/sfx/cardPlace3.wav", "static"),
-	["cardPlace4"] = love.audio.newSource("assets/audio/sfx/cardPlace4.wav", "static"),
-	["spellcard"] = love.audio.newSource("assets/audio/sfx/spellcard.mp3", "static"),
-	["spellcard2"] = love.audio.newSource("assets/audio/sfx/spellcard2.wav", "static"),
-	["discard"] = love.audio.newSource("assets/audio/sfx/discard.wav", "static"),
-	["select"] = love.audio.newSource("assets/audio/sfx/select.wav", "static"),
-	["nothing"] = love.audio.newSource("assets/audio/sfx/nothing.wav", "static"),
-	["choose"] = love.audio.newSource("assets/audio/sfx/choose.wav", "static"),
-	["win"] = love.audio.newSource("assets/audio/sfx/win.wav", "static")
-}
-
 function Game:new()
 	Game.super.new(self)
 
