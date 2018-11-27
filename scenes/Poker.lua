@@ -13,7 +13,7 @@ CARD_DIMS = {
 		{ x = 50, y = 544 },
 		{ x = 200, y = 544 }
 	},
-	["dealer"] = {
+	["bot"] = {
 		{ x = 495, y = 10 },
 		{ x = 535, y = 10}
 	}
@@ -84,19 +84,22 @@ function Poker:on_enter()
 	Snow:load(love.graphics.getWidth(), love.graphics.getHeight(), 25)
 
 	self.state = {
-		["your_turn"] = true
+		["river"] = false
 	}
 
 	self.pot = 0
 	self.bet = 1
 	self.credits = 50
-	self.dealer_credits = 50
+	self.blind = 1 -- 1 for player, 2 for opponent
+	self.bot_credits = 50
 	self.deck = {}
 	self.hand = {}
 	self.table_cards = {}
 	self.first_play = true
-	self.dealer_hand = {}
+	self.bot_hand = {}
+	self.bot_thinking = false
 	self.deck_length = 52
+	self.msgbox = {"Welcome, and good luck!", "You're up first"}
 	self:shuffle()
 	self:add_to_pot(2, 1)
 	self:deal()
@@ -187,8 +190,8 @@ function Poker:deal()
 	tweens[1] = Tween.new(0.4, self.hand[1], CARD_DIMS.player[1], 'linear')
 	snd.cardPlace1:play()
 	
-	self.dealer_hand[1] = self.deck[math.random(1,self.deck_length)]
-	self.dealer_hand[2] = self.deck[math.random(1,self.deck_length)]
+	self.bot_hand[1] = self.deck[math.random(1,self.deck_length)]
+	self.bot_hand[2] = self.deck[math.random(1,self.deck_length)]
 end
 
 function Poker:deal_river()
@@ -204,13 +207,13 @@ function Poker:deal_river()
 		}
 
 		tweens[i] = Tween.new(0.2 + i / 10, self.table_cards[i], { x = self.card_slot[i].x+5, y = self.card_slot[i].y }, 'linear')
-		--snd["cardPlace" .. i]:stop()
 	end
+	self.state.river = true
 end
 
 function Poker:add_to_pot(p, n)
 	if p == 1 then self.credits = self.credits - n end
-	if p == 2 then self.dealer_credits = self.dealer_credits - n end
+	if p == 2 then self.bot_credits = self.bot_credits - n end
 	self.pot = self.pot + n
 end
 
@@ -237,12 +240,14 @@ function Poker:update(dt)
 	Snow:update(dt)
 	self.input:update()
 
-	if self.input:pressed "click" then
-		local mx, my = love.mouse.getPosition()
-		for _,v in pairs(self.entity_mgr.entities) do
-			if mx >= v.x*scaleX and mx <= (v.x+v.w)*scaleX and my >= v.y*scaleY and my <= (v.y+v.h)*scaleY then
-				if v.on_click ~= nil then
-					v:on_click()
+	if not self.bot_thinking then
+		if self.input:pressed "click" then
+			local mx, my = love.mouse.getPosition()
+			for _,v in pairs(self.entity_mgr.entities) do
+				if mx >= v.x*scaleX and mx <= (v.x+v.w)*scaleX and my >= v.y*scaleY and my <= (v.y+v.h)*scaleY then
+					if v.on_click ~= nil then
+						v:on_click()
+					end
 				end
 			end
 		end
@@ -250,14 +255,19 @@ function Poker:update(dt)
 end
 
 function Poker:draw_status()
-	if self.state.your_turn then
-		msg = "Your turn!"
-	end
+	love.graphics.setColor(0, 0, 0, 0.4)
+	love.graphics.rectangle("fill", 47, 5, 285, 150)
 
-	self.println(msg, 47, 20, Fonts.Status)
+	self.println(self.avatar.marisa.name .. " says:", 60, 20, Fonts.Button, Color.LimeGreen)
+	
+	local y = 55
+	for _,v in pairs(self.msgbox) do
+		self.println(v, 60, y, Fonts.Text)
+		y = y + 30
+	end
 end
 
-function Poker.println(s, x, y, f)
+function Poker.println(s, x, y, f, c)
 	if f ~= nil then
 		love.graphics.setFont(f)
 	else
@@ -265,8 +275,10 @@ function Poker.println(s, x, y, f)
 	end
 	love.graphics.setColor(Color.Shadow)
 	love.graphics.print(s, x+2, y+2)
-	love.graphics.setColor(Color.Clear)
+	local color = c ~= nil and c or Color.Clear
+	love.graphics.setColor(color)
 	love.graphics.print(s, x, y)
+	if c then love.graphics.setColor(Color.Clear) end
 end
 
 function Poker:draw()
@@ -275,7 +287,7 @@ function Poker:draw()
 	Snow:draw()
 
 	-- backdrop for opponent
-	local credstr = self.avatar.marisa.name .. ": " .. self.dealer_credits
+	local credstr = self.avatar.marisa.name .. ": " .. self.bot_credits
 	local creditx = (495-Fonts.Button:getWidth(credstr))-40
 
 	love.graphics.setColor(0.47, 0.13, 0.30, 0.3)
