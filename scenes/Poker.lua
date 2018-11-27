@@ -79,6 +79,41 @@ function Poker:draw_card(n, x, y, slot, shadow)
 	love.graphics.draw(card, x, y)
 end
 
+function Poker:on_enter()
+	self.entity_mgr.entities = {}
+	Snow:load(love.graphics.getWidth(), love.graphics.getHeight(), 25)
+	-- generate a new deck
+	self.pot = 0
+	self.bet = 1
+	self.credits = 50
+	self.dealer_credits = 50
+	self.deck = {}
+	self.hand = {}
+	self.table_cards = {}
+	self.first_play = true
+	self.dealer_hand = {}
+	self.deck_length = 52
+	self:shuffle()
+	self:add_to_pot(2, 1)
+	self:deal()
+
+	local raise_max = Button(400, 544, "Raise Max")
+	local raise = Button(400, 594, "Raise")
+	local call  = Button(400, 644, "Call")
+	local fold  = Button(400, 694, "Fold")
+	call.on_click = function() self:call_hand() end
+	raise.on_click = function() self:raise_bet() end
+	raise_max.on_click = function() self:raise_bet(true) end
+
+	local i
+	for i = 1, 5 do self.table_cards[i] = { x = 710, y = 544 } end
+	
+	self.entity_mgr:add(raise_max)
+	self.entity_mgr:add(raise)
+	self.entity_mgr:add(call)
+	self.entity_mgr:add(fold)
+end
+
 function Poker:draw_center()
 	love.graphics.setLineWidth(10)
 	love.graphics.setColor(Color.DarkBlue)
@@ -87,39 +122,34 @@ function Poker:draw_center()
 		love.graphics.rectangle("line", self.card_slot[i].x, 250, CARD_WIDTH+10, CARD_HEIGHT+10, 10, 10)
 	end
 	love.graphics.setColor(Color.Clear)
-end
 
-function Poker:on_enter()
-	Snow:load(love.graphics.getWidth(), love.graphics.getHeight(), 25)
-	local raise_max = Button(400, 544, "Raise Max")
-	local raise = Button(400, 594, "Raise")
-	local call  = Button(400, 644, "Call")
-	call.on_click = function()
-		snd.choose:play()
-		if self.first_play then
-			self.first_play = false
-			self:deal_river()
+	for i = 1, 5 do
+		if self.table_cards[i].card ~= nil then
+			local card = self.table_cards[i]
+			self:draw_card(card.card, card.x, card.y)
 		end
 	end
-	local fold  = Button(400, 694, "Fold")
-	self.entity_mgr:add(raise_max)
-	self.entity_mgr:add(raise)
-	self.entity_mgr:add(call)
-	self.entity_mgr:add(fold)
+end
 
-	-- generate a new deck
-	self.pot = 0
-	self.bet = 1
-	self.credits = 50
-	self.dealer_credits = 50
-	self.deck = {}
-	self.hand = {}
-	self.first_play = true
-	self.dealer_hand = {}
-	self.deck_length = 52
-	self:shuffle()
-	self:add_to_pot(2, 1)
-	self:deal()
+function Poker:call_hand()
+	snd.choose:stop()
+	snd.choose:play()
+	if self.first_play then
+		self.first_play = false
+		self:deal_river()
+	end
+end
+
+function Poker:raise_bet(max)
+	local chips = max and 5 or 1
+	snd.chipsHandle:stop()
+	snd.chipsHandle:play()
+	if self.credits - chips < 0 then
+		snd.chipsHandle:stop()
+		snd.nothing:play()
+	else
+		self:add_to_pot(1, chips)
+	end
 end
 
 function Poker:shuffle()
@@ -160,6 +190,18 @@ end
 function Poker:deal_river()
 	math.randomseed(love.timer.getTime())
 
+	local i
+	for i = 1, 3 do
+		snd["cardPlace" .. i]:play()
+		self.table_cards[i] = {
+			x = 710,
+			y = 544,
+			card = math.random(1, self.deck_length)
+		}
+
+		tweens[i] = Tween.new(0.2 + i / 10, self.table_cards[i], { x = self.card_slot[i].x+5, y = self.card_slot[i].y }, 'linear')
+		--snd["cardPlace" .. i]:stop()
+	end
 end
 
 function Poker:add_to_pot(p, n)

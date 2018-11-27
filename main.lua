@@ -17,6 +17,7 @@ snd = {
 	["cardPlace4"] = love.audio.newSource("assets/audio/sfx/cardPlace4.wav", "static"),
 	["spellcard"] = love.audio.newSource("assets/audio/sfx/spellcard.mp3", "static"),
 	["spellcard2"] = love.audio.newSource("assets/audio/sfx/spellcard2.wav", "static"),
+	["chipsHandle"] = love.audio.newSource("assets/audio/sfx/chipsHandle6.wav", "static"),
 	["discard"] = love.audio.newSource("assets/audio/sfx/discard.wav", "static"),
 	["select"] = love.audio.newSource("assets/audio/sfx/select.wav", "static"),
 	["nothing"] = love.audio.newSource("assets/audio/sfx/nothing.wav", "static"),
@@ -45,7 +46,7 @@ function love.load()
 		["SGame"]  = require "scenes.Game"(),
 		["SPoker"] = require "scenes.Poker"()
 	})
-	SceneManager:switch("STitle")
+	SceneManager:switch("SPoker")
 end
 scale = 0
 
