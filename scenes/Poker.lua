@@ -82,7 +82,11 @@ end
 function Poker:on_enter()
 	self.entity_mgr.entities = {}
 	Snow:load(love.graphics.getWidth(), love.graphics.getHeight(), 25)
-	-- generate a new deck
+
+	self.state = {
+		["your_turn"] = true
+	}
+
 	self.pot = 0
 	self.bet = 1
 	self.credits = 50
@@ -245,6 +249,14 @@ function Poker:update(dt)
 	end
 end
 
+function Poker:draw_status()
+	if self.state.your_turn then
+		msg = "Your turn!"
+	end
+
+	self.println(msg, 47, 20, Fonts.Status)
+end
+
 function Poker.println(s, x, y, f)
 	if f ~= nil then
 		love.graphics.setFont(f)
@@ -266,7 +278,7 @@ function Poker:draw()
 	local credstr = self.avatar.marisa.name .. ": " .. self.dealer_credits
 	local creditx = (495-Fonts.Button:getWidth(credstr))-40
 
-	love.graphics.setColor(Color.Purple)
+	love.graphics.setColor(0.47, 0.13, 0.30, 0.3)
 	love.graphics.rectangle("fill", creditx-30, 5, 560, 230)
 	love.graphics.setColor(Color.Clear)
 
@@ -294,6 +306,9 @@ function Poker:draw()
 
 	-- draw the deck
 	self:draw_card(0, 710, 544)
+
+	-- draw status
+	self:draw_status()
 
 	Poker.super.draw(self)
 end
