@@ -5,6 +5,7 @@ Fonts = {
 	["Main"] = love.graphics.newFont("assets/fonts/liebefinden.ttf", 32),
 	["Status"] = love.graphics.newFont("assets/fonts/bebasneue.ttf", 40),
 	["Text"] = love.graphics.newFont("assets/fonts/liebefinden.ttf", 20),
+	["Text2"] = love.graphics.newFont("assets/fonts/liebefinden.ttf", 25),
 	["Button"] = love.graphics.newFont("assets/fonts/bebasneue.ttf", 25)
 }
 SceneManager = require "lib.SceneManager"
@@ -28,7 +29,6 @@ snd = {
 function love.load()
 	min_dt = 1/60
 	next_time = love.timer.getTime()
-	--love.window.setIcon(love.image.newImageData("assets/gfx/icon.png"))
 	Canvas:setFilter("nearest", "nearest")
 	love.window.setTitle("Touhou Yahtzee")
 	love.window.setMode(910, 800, { resizable = true })

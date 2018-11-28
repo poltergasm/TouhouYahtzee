@@ -21,7 +21,7 @@ end
 
 function Title:on_enter()
 	Snow:load(love.graphics.getWidth(), love.graphics.getHeight(), 25)
-	title_music:play()
+	--title_music:play()
 end
 
 function Title:check_click(mx, my)
@@ -43,6 +43,8 @@ function Title:update(dt)
 		local mx,my = love.mouse.getPosition()
 		self:check_click(mx, my)
 	end
+
+	if self.input:pressed "play" then title_music:play() end
 end
 
 function Title.print_rules()

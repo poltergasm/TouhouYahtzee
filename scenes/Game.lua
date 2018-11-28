@@ -12,7 +12,7 @@ local STATUS_X = 265
 local status_width
 
 local tweens = {}
-
+local background = love.graphics.newImage("assets/gfx/bg1.jpg")
 function Game:new()
 	Game.super.new(self)
 
@@ -55,6 +55,7 @@ function Game:new()
 end
 
 function Game:on_enter()
+	Jukebox.current = 1
 	self.state = {
 		["playing"] = true,
 		["choosing"] = false,
@@ -157,7 +158,7 @@ end
 function Game:print_scores()
 	for k,v in pairs(self.scores) do
 		if self.used[k] then
-			love.graphics.setColor(Color.Red)
+			love.graphics.setColor(Color.Gray)
 		elseif self.selected ~= nil and self.selected.name == v.name then
 			love.graphics.setColor(Color.DarkBlue)
 		else
@@ -515,7 +516,15 @@ end
 -- 30 between cards
 function Game:draw()
 	Game.super.draw(self)
-	love.graphics.clear(Color.Pink)
+	local sx, sy = love.graphics.getWidth() / background:getWidth(),
+		love.graphics.getHeight() / background:getHeight()
+	love.graphics.draw(background, -120, 0, 0, math.max(sx,sy))
+
+	--[[love.graphics.setColor(0, 0, 0, 0.4)
+	local screenW, screenH = love.graphics.getDimensions()
+	love.graphics.rectangle("fill", 0, 0, screenW, screenH)
+	love.graphics.setColor(Color.Clear)]]
+
 	Snow:draw()
 	love.graphics.setColor(1, 1, 1, 255)
 	self:print_scores()
