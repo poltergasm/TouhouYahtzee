@@ -31,7 +31,7 @@ function love.load()
 	next_time = love.timer.getTime()
 	Canvas:setFilter("nearest", "nearest")
 	love.window.setTitle("Touhou Yahtzee")
-	love.window.setMode(910, 800, { resizable = true })
+	love.window.setMode(910, 800, { resizable = false })
 	love.graphics.setFont(Fonts.Main)
 
 	Jukebox:add_song({ file = "assets/audio/bgm/lullaby_of_deserted_hell.mp3"})

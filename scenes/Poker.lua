@@ -19,6 +19,7 @@ CARD_DIMS = {
 	}
 }
 
+local background = love.graphics.newImage("assets/gfx/bg2.jpg")
 local tweens = {}
 
 function Poker:new()
@@ -96,8 +97,8 @@ function Poker:reset()
 end
 
 function Poker:on_enter()
-	Jukebox.current = 2
-	--Jukebox:play()
+	Jukebox.current = 4
+	Jukebox:play()
 	self.entity_mgr.entities = {}
 	Snow:load(love.graphics.getWidth(), love.graphics.getHeight(), 25)
 
@@ -160,7 +161,7 @@ function Poker:draw_center()
 
 	if #self.table_cards > 0 then
 		for i = 1, 5 do
-			if self.table_cards[i].card ~= nil then
+			if self.table_cards[i] ~= nil and self.table_cards[i].card ~= nil then
 				local card = self.table_cards[i]
 				self:draw_card(card.card, card.x, card.y)
 			end
@@ -178,6 +179,10 @@ function Poker:call_hand(p)
 	elseif p == 2 then
 		self.msgbox = {"I will call", "Your turn"}
 		self:add_to_pot(2, self.bet)
+		if not self.state.river then
+			self.msgbox = {"I will call", "Here comes the river."}
+			self:deal_river()
+		end
 	end
 end
 
@@ -191,7 +196,7 @@ function Poker:raise_bet(p, max)
 	else
 		self.bet = self.bet + chips
 		self:add_to_pot(1, chips)
-		local cred = chips > 1 and "credits" or "credit"
+		local cred = self.bet > 1 and "credits" or "credit"
 		self:bot_turn(false, {"The bet has been raised", "to " .. self.bet .. " " .. cred})
 	end
 end
@@ -380,14 +385,17 @@ end
 
 function Poker:draw()
 	love.graphics.clear(Color.LightBlue)
-	
+	local sx, sy = love.graphics.getWidth() / background:getWidth(),
+		love.graphics.getHeight() / background:getHeight()
+	love.graphics.draw(background, 0, 0, 0, math.max(sx,sy))
+
 	Snow:draw()
 
 	-- backdrop for opponent
 	local credstr = self.avatar.marisa.name .. ": " .. self.bot_credits
 	local creditx = (495-Fonts.Button:getWidth(credstr))-40
 
-	love.graphics.setColor(0.47, 0.13, 0.30, 0.3)
+	love.graphics.setColor(0.47, 0.13, 0.30, 0.5)
 	love.graphics.rectangle("fill", creditx-30, 5, 560, 230)
 	love.graphics.setColor(Color.Clear)
 
@@ -412,6 +420,7 @@ function Poker:draw()
 	-- show players hand and credits
 	self:show_hand()
 	self.println("Credits: " .. self.credits, 530, 544, Fonts.Status)
+	self.println("Bet: " .. self.bet, 530, 594, Fonts.Button)
 
 	-- draw the deck
 	self:draw_card(0, 710, 544)
